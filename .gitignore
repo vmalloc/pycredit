@@ -5,4 +5,4 @@ build
 .tox
 flycheck-*
 dist
-.env
+.eggs

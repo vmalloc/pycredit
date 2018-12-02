@@ -3,6 +3,8 @@
 from __future__ import print_function
 
 import datetime
+import uuid
+import json
 
 import logbook
 import requests
@@ -20,10 +22,11 @@ _LEUMI_URL = URLObject('https://online.leumi-card.co.il')
 
 class LeumiCardImporter(Importer):
 
-    def __init__(self, auth):
+    def __init__(self, auth, debug_directory=None):
         super(LeumiCardImporter, self).__init__()
         self._auth = auth
         self._session = requests.Session()
+        self._debug_directory = debug_directory
 
     def fetch(self):
         self._login()
@@ -54,7 +57,17 @@ class LeumiCardImporter(Importer):
                     yield _LEUMI_URL + download_link.attrs['href']
 
     def _fetch_charge_page(self, print_page_link):
-        return self._session.get(print_page_link).content.decode('utf-8')
+        resp = self._session.get(print_page_link)
+        resp.raise_for_status()
+        data = resp.content
+        if self._debug_directory:
+            self._debug_directory.mkdir(parents=True, exist_ok=True)
+            page_id = uuid.uuid4()
+            with open(self._debug_directory / f"{page_id}.html", "wb") as f:
+                f.write(data)
+            with open(self._debug_directory / f"{page_id}.json", "w") as f:
+                json.dump({"url": print_page_link}, f)
+        return data.decode('utf-8')
 
     def _parse_charges(self, page):
         card = self._parse_card(page)

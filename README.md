@@ -11,7 +11,7 @@ Usage
 from pycredit.il_leumi_card import LeumiCardImporter
 
 importer = LeumiCardImporter((username, password))
-for charge in importer.fetch()
+for charge in importer.fetch():
 	print('Paid', charge.amount, 'to', charge.payee, 'on', charge.date)
 ```
 
@@ -23,5 +23,5 @@ Supported Providers
 Licence
 =======
 
-BSD3
+MIT
 
